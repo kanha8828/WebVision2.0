@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>GroupBook – Book together, pay separately</title>
+<style>
+:root{--bg:#f2f2f2;--surface:#fff;--ink:#1f2533;--mute:#6b7280;--line:#e5e7eb;--nav:#333545;--red:#f84464;--green:#1a9c5b;--chip:#f3f4f6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161d;--surface:#1e212b;--ink:#eceef3;--mute:#9aa1b2;--line:#323646;--chip:#2a2e3b;--green:#3ccf8a}}
+:root[data-theme="dark"]{--bg:#14161d;--surface:#1e212b;--ink:#eceef3;--mute:#9aa1b2;--line:#323646;--chip:#2a2e3b;--green:#3ccf8a}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+header{background:var(--nav);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-size:22px;font-weight:700;letter-spacing:-.5px}.logo b{color:var(--red)}
+.search{flex:1;min-width:160px;max-width:520px;background:#fff;color:#555;border-radius:4px;padding:8px 12px;font-size:14px}
+.nav-r{margin-left:auto;display:flex;gap:10px;align-items:center}
+.gbtn{background:var(--red);color:#fff;border:0;border-radius:6px;padding:9px 16px;font-weight:600;display:flex;gap:8px;align-items:center;box-shadow:0 0 0 3px rgba(248,68,100,.3)}
+.gbtn:hover{filter:brightness(1.08)}
+.signin{background:transparent;border:1px solid #888;color:#fff;border-radius:4px;padding:7px 12px}
+.sub{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:22px;font-size:14px;color:var(--mute);overflow-x:auto;white-space:nowrap}
+.sub span:first-child{color:var(--ink);font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:20px}
+.banner{border-radius:10px;padding:28px;background:linear-gradient(120deg,#3b2b5c,#f84464);color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.banner h2{margin:0 0 4px;font-size:24px}.banner p{margin:0;opacity:.9}
+.banner button{background:#fff;color:var(--red);border:0;border-radius:6px;padding:10px 18px;font-weight:700}
+h3{margin:26px 0 12px}
+.row{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px}
+.poster{flex:0 0 160px}.poster i{display:block;height:230px;border-radius:8px;margin-bottom:6px}
+.poster b{display:block;font-size:14px}.poster small{color:var(--mute)}
+/* overlay */
+#gb{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:20;align-items:center;justify-content:center;padding:16px}
+#gb.open{display:flex}
+.panel{background:var(--surface);width:100%;max-width:900px;height:min(640px,100%);border-radius:12px;display:grid;grid-template-columns:300px 1fr;overflow:hidden}
+.side{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.ph{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);font-weight:700;font-size:17px}
+.ph button,.x{background:var(--chip);color:var(--ink);border:0;border-radius:6px;padding:6px 10px}
+.newg{background:var(--red)!important;color:#fff!important;font-weight:600}
+.glist{overflow-y:auto;flex:1}
+.g{display:flex;gap:12px;padding:12px 16px;align-items:center;border:0;background:none;color:var(--ink);width:100%;text-align:left;border-bottom:1px solid var(--line)}
+.g:hover,.g.on{background:var(--chip)}
+.av{flex:0 0 42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700}
+.g div{min-width:0}.g b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.g small{color:var(--mute)}
+.main{display:flex;flex-direction:column;min-height:0}
+.body{padding:18px;overflow-y:auto;flex:1}
+.empty{text-align:center;color:var(--mute);margin:auto;padding:30px}
+label{display:block;font-weight:600;margin:14px 0 6px;font-size:14px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit}
+.stepper{display:flex;align-items:center;gap:14px}
+.stepper button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:18px}
+.stepper output{font-size:20px;font-weight:700;min-width:28px;text-align:center}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.primary{background:var(--red);color:#fff;border:0;border-radius:6px;padding:11px 18px;font-weight:700;margin-top:18px}
+.ghost{background:var(--chip);color:var(--ink);border:0;border-radius:6px;padding:11px 16px;margin-left:8px}
+.mem{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mem .av{flex-basis:36px;height:36px;font-size:14px}
+.mem div{flex:1;min-width:0}.mem small{color:var(--mute);display:block}
+.chip{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--chip);color:var(--mute)}
+.chip.ok{background:rgba(26,156,91,.15);color:var(--green);font-weight:600}
+.pay{background:var(--red);color:#fff;border:0;border-radius:6px;padding:6px 12px;font-size:13px}
+.sum{background:var(--chip);border-radius:8px;padding:14px;margin:14px 0}
+.sum .big{font-size:22px;font-weight:700}
+.bar{height:6px;border-radius:4px;background:var(--line);margin-top:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green)}
+.back{display:none}
+.tools{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.del{color:var(--red);background:none;border:0;margin-top:14px}
+@media (max-width:700px){
+.panel{grid-template-columns:1fr;border-radius:12px}
+.panel .main{display:none}.panel.show-main .side{display:none}.panel.show-main .main{display:flex}
+.back{display:inline-block}
+}
+.panel.wide{grid-template-columns:1fr}.panel.wide .side{display:none}.panel.wide .main{display:flex}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;margin-top:12px}
+.mc{background:none;border:0;padding:0;text-align:left;color:var(--ink)}
+.mc i{display:block;aspect-ratio:2/3;border-radius:8px;position:relative;margin-bottom:6px}
+.mc em{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);color:#fff;font-style:normal;font-size:11px;padding:4px 8px;border-radius:0 0 8px 8px}
+.mc b{display:block;font-size:14px}.mc small{color:var(--mute)}
+.hero{display:flex;gap:18px;background:#1a1a1a;color:#fff;border-radius:10px;padding:18px;flex-wrap:wrap}
+.hero .pst{flex:0 0 140px;height:208px;border-radius:8px}
+.hero h2{margin:6px 0 10px}
+.rate{border:1px solid #fff;border-radius:8px;padding:8px 12px;display:inline-block;font-weight:600}
+.tag{background:#444;border-radius:3px;padding:2px 8px;font-size:12px;margin-right:6px}
+.dates{display:flex;gap:6px;overflow-x:auto;padding:10px 0;border-bottom:1px solid var(--line)}
+.d{border:0;background:none;color:var(--mute);text-align:center;padding:6px 12px;border-radius:6px;font-size:12px;min-width:54px}
+.d b{display:block;font-size:18px;color:var(--ink)}
+.d.on{background:var(--red);color:#fff}.d.on b{color:#fff}
+.cin{padding:14px 0;border-bottom:1px solid var(--line)}
+.cin small{color:var(--mute);display:block}
+.times{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.tm{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:4px solid var(--green);border-radius:3px;padding:7px 14px;font-size:13px;text-align:center}
+.tm.f{border-left-color:#e6a700}
+.tm small{font-size:9px;display:block;color:var(--mute)}
+.tm:hover{background:var(--chip)}
+.leg{font-size:12px;color:var(--mute);display:flex;gap:14px;margin:10px 0}
+.stage{background:radial-gradient(120% 60% at 50% 100%,#2a1a24 0%,#0e0f15 60%);border-radius:12px;padding:14px 8px 18px;margin-top:12px;color:#e9e9ee;overflow-x:auto}
+.stt{padding:0 8px 10px;border-bottom:1px solid #2b2d3a;margin-bottom:6px}.stt b{display:block}.stt span{font-size:12px;color:#9aa1b2}
+.legend{display:flex;gap:14px;font-size:12px;color:#9aa1b2;padding:6px 8px;flex-wrap:wrap}
+.lg{display:inline-block;width:12px;height:12px;border-radius:3px 3px 2px 2px;margin-right:5px;vertical-align:-2px;border:1.5px solid #3ddc97}
+.hall{width:max-content;margin:0 auto}
+.tier{margin:14px 0 6px;padding-top:8px;border-top:1px solid #2b2d3a;font-size:12px;text-align:center;color:var(--c)}
+.srow{display:flex;align-items:center;justify-content:center;gap:8px;margin:5px 0}
+.rl{width:14px;font-size:12px;color:#7d8397;text-align:center}
+.seats{display:flex;gap:5px}
+.st{--c:#3ddc97;width:23px;height:23px;padding:0;border:1.5px solid var(--c);background:transparent;color:var(--c);border-radius:6px 6px 3px 3px;font-size:10px}
+.t0{--c:#ffc857}.t1{--c:#b79cff}.t2{--c:#3ddc97}.t3{--c:#6ec6ff}
+.st.gap{margin-left:22px}
+.st:hover:not(:disabled){background:#ffffff1f}
+.st.sold{border-color:#2b2d3a;background:#22242f;color:#4a4e60;cursor:not-allowed}
+.st.pick{background:#f84464;border-color:#ff8aa0;color:#fff;box-shadow:0 0 10px rgba(248,68,100,.7)}
+.screen{margin:26px auto 4px;width:70%;text-align:center}
+.screen i{display:block;height:34px;border-top:4px solid #ffd9a0;border-radius:50% 50% 0 0/100% 100% 0 0;box-shadow:0 -14px 28px rgba(255,200,130,.35);background:linear-gradient(#ffd9a014,transparent)}
+.screen span{font-size:11px;color:#9aa1b2}
+.sbar{position:sticky;bottom:-18px;margin:12px -18px -18px;background:var(--surface);border-top:1px solid var(--line);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.sbar small{display:block;color:var(--mute)}
+button:disabled{opacity:.45;cursor:not-allowed}
+@media (max-width:700px){.st{width:19px;height:19px;font-size:9px}.seats{gap:3px}.st.gap{margin-left:14px}}
+#pm{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:30;align-items:center;justify-content:center;padding:16px}#pm.open{display:flex}
+.pbox{background:var(--surface);color:var(--ink);border-radius:12px;padding:20px;max-width:340px;width:100%;text-align:center;max-height:100%;overflow-y:auto}
+.qr{width:190px;margin:10px auto;border:1px solid var(--line);border-radius:8px;overflow:hidden}.qr svg{display:block;width:100%}
+.pd{font-size:13px;line-height:1.7;text-align:left;background:var(--chip);border-radius:8px;padding:10px 12px;word-break:break-all}
+.pn{font-size:12px;color:var(--mute)}
+.pe{font-size:12px}
+.inv{background:var(--bg);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.14);margin:14px 0}
+.ih{background:linear-gradient(135deg,#1c1e2b,#3a3d55);color:#fff;padding:16px 18px;display:flex;justify-content:space-between;gap:12px;border-bottom:3px solid #d4af37}
+.ih small{display:block;opacity:.7;font-size:11px}.ih b{font-size:15px}
+.ih .il{font-size:19px;letter-spacing:-.4px}.il em{font-style:normal;color:var(--red)}.il span{font-size:11px;font-weight:600;background:#d4af37;color:#1c1e2b;border-radius:3px;padding:1px 6px;margin-left:6px;letter-spacing:0}
+.ib{padding:16px 18px}
+.mv b{font-size:17px;display:block}.mv small{display:block;color:var(--mute)}
+.sec{margin:16px 0 4px;font-weight:700;font-size:13px;color:var(--mute)}
+.ir{display:flex;justify-content:space-between;padding:4px 0;font-variant-numeric:tabular-nums;gap:10px}
+.ir.sub{color:var(--mute);font-size:13px;padding-left:12px}
+.ir.tot{font-size:20px;font-weight:700;padding-top:8px}
+.perf{position:relative;border-top:2px dashed var(--line);margin:16px -18px}
+.perf::before,.perf::after{content:"";position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:var(--surface)}
+.perf::before{left:-9px}.perf::after{right:-9px}
+.spl{display:flex;align-items:center;gap:10px;padding:7px 0}
+.spl .av{flex:0 0 30px;height:30px;font-size:12px}.spl .n{flex:1}.spl b{font-variant-numeric:tabular-nums}
+.hold{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,#7a1f2e,#f84464);color:#fff;border-radius:10px;padding:12px 16px;margin:14px 0}.hold b{font-size:26px;font-variant-numeric:tabular-nums}.hold small{flex-basis:100%;opacity:.9}
+.hold .ghost{margin:0 0 0 auto;padding:5px 10px;font-size:12px}
+.msg{border:1px solid var(--red);background:var(--chip);border-radius:10px;padding:14px;margin:14px 0}.msg.ok{border-color:var(--green)}.msg p{margin:6px 0 10px}
+.cps{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.cpn{display:flex;text-align:left;border:0;padding:0;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#2d1b4e,#6d28d9);color:#fff;position:relative;min-height:84px}
+.cpn .cl{flex:1;padding:12px 14px}.cpn .cl b{display:block;font-size:17px}.cpn small{opacity:.8}
+.cpn .cr{flex:0 0 100px;border-left:2px dashed rgba(255,255,255,.45);padding:10px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;background:rgba(255,255,255,.08)}
+.cpn .cr span{font:700 11px/1.2 ui-monospace,Menlo,monospace;background:#fff;color:#2d1b4e;border-radius:4px;padding:3px 6px}
+.cpn .cr em{font-style:normal;font-size:12px;font-weight:600;color:#ffd76a}
+.cpn.on{outline:3px solid #ffd76a}.cpn.off{filter:grayscale(1);opacity:.6;cursor:not-allowed}
+.cpn::before,.cpn::after{content:"";position:absolute;right:93px;width:14px;height:14px;border-radius:50%;background:var(--surface)}.cpn::before{top:-7px}.cpn::after{bottom:-7px}
+.fbk{background:linear-gradient(160deg,#14161f,#2a2140);color:#fff;border-radius:14px;padding:18px;margin:18px 0;border:1px solid #3a3358}.fbk h4{margin:0 0 4px;font-size:19px}
+.fm{border-top:1px solid #ffffff22;padding:12px 0;margin-top:12px}.fh{display:flex;align-items:center;gap:10px}.fh .av{flex:0 0 30px;height:30px;font-size:12px}.fh em{font-style:normal;color:#ffc857;margin-left:auto}
+.sb{background:none;border:0;font-size:28px;color:#555a70;padding:0 3px}.sb.on{color:#ffc857;text-shadow:0 0 10px rgba(255,200,87,.5)}
+.tg{border:1px solid #ffffff44;border-radius:99px;padding:3px 12px;margin:4px 6px 0 0;background:none;color:#fff;font-size:12px}.tg.on{background:#ffc857;color:#1c1e2b;border-color:#ffc857}
+.fbk textarea{width:100%;background:#ffffff12;color:#fff;border:1px solid #ffffff30;border-radius:8px;padding:8px;font:inherit;margin-top:10px;min-height:56px}
+.avb{position:relative;border:0;padding:0;background:none;border-radius:50%;margin-right:2px}.avb .av{width:46px;height:46px;flex:none;font-size:18px}
+.avb i{position:absolute;right:-6px;bottom:-4px;background:var(--red);color:#fff;font-style:normal;font-size:10px;padding:1px 6px;border-radius:99px}
+.eg{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}.eb{width:42px;height:42px;border:0;border-radius:50%;font-size:20px}
+.pv .av{height:84px;font-size:34px!important}
+.pbox.w{max-width:420px;text-align:left}
+.eh{background:linear-gradient(135deg,#0f5132,#1a9c5b);color:#fff;margin:-20px -20px 14px;padding:18px;text-align:center}
+.ec{width:44px;height:44px;border-radius:50%;background:#fff;color:#1a9c5b;display:grid;place-items:center;font-size:24px;margin:0 auto 6px}
+@keyframes pop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes fall{to{transform:translateY(560px) rotate(720deg);opacity:0}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(26,156,91,.5)}50%{box-shadow:0 0 0 18px rgba(26,156,91,0)}}
+.cg{position:relative;overflow:hidden;padding-top:26px}
+.cg .ck{width:84px;height:84px;border-radius:50%;background:var(--green);color:#fff;font-size:44px;display:grid;place-items:center;margin:8px auto 14px;animation:pop .6s ease-out both,pulse 1.6s .6s infinite}
+.cg h2{margin:0;font-size:26px;animation:pop .6s .2s ease-out both}
+.cf{position:absolute;top:-16px;width:8px;height:14px;border-radius:2px;animation:fall linear forwards}
+@media (prefers-reduced-motion:reduce){.cg .ck,.cg h2{animation:none}.cf{display:none}}
+
+/* ===== Premium theme ===== */
+:root{--bg:#f5f2ec;--surface:#fff;--ink:#17161c;--mute:#78737f;--line:#ebe6dd;--nav:#0e0d13;--red:#e8304f;--gold:#c9a24b;--chip:#f3efe7;--green:#17935a;--ff:"Plus Jakarta Sans","Segoe UI",Roboto,Helvetica,Arial,sans-serif;--fd:"Playfair Display",Georgia,"Times New Roman",serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0c11;--surface:#17161d;--ink:#f2efe9;--mute:#9b96a3;--line:#2a2833;--chip:#211f29;--green:#3ccf8a}}
+:root[data-theme="dark"]{--bg:#0d0c11;--surface:#17161d;--ink:#f2efe9;--mute:#9b96a3;--line:#2a2833;--chip:#211f29;--green:#3ccf8a}
+body{font-family:var(--ff);-webkit-font-smoothing:antialiased}
+h2,h3,h4,.ph,.logo,.il{font-family:var(--fd);letter-spacing:0}
+header{background:linear-gradient(180deg,#15131c,#0e0d13);border-bottom:1px solid rgba(201,162,75,.3);padding:14px 28px}
+.logo{font-size:27px}
+.search{background:rgba(255,255,255,.07);color:#b8b3c0;border:1px solid rgba(255,255,255,.12);border-radius:99px;padding:10px 18px}
+.gbtn{background:linear-gradient(135deg,#e8304f,#b81e3c);border-radius:99px;padding:10px 20px;box-shadow:0 6px 18px rgba(232,48,79,.4)}
+.signin{border-radius:99px;border-color:rgba(255,255,255,.28);padding:8px 16px}
+.sub{padding:12px 28px;font-weight:500;gap:28px}
+.sub span:first-child{box-shadow:0 2px 0 var(--gold);padding-bottom:2px}
+main{padding:28px 20px}
+.banner{border-radius:22px;padding:44px;background:radial-gradient(120% 150% at 0 0,#31244d,#0e0d13 70%);border:1px solid rgba(201,162,75,.35);box-shadow:0 22px 50px rgba(0,0,0,.25)}
+.banner h2{font-size:31px;line-height:1.25;max-width:600px}
+.banner button{background:linear-gradient(135deg,#ecd08a,#c9a24b);color:#1b1608;border-radius:99px;padding:13px 26px;box-shadow:0 8px 20px rgba(201,162,75,.35)}
+h3{font-size:22px;margin:34px 0 14px}
+.poster i{border-radius:16px;box-shadow:0 12px 26px rgba(0,0,0,.22);transition:transform .25s}.poster:hover i{transform:translateY(-5px)}
+.poster b{font-weight:600}
+#gb{background:rgba(8,7,12,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.panel{border-radius:24px;border:1px solid var(--line);box-shadow:0 32px 90px rgba(0,0,0,.5)}
+.ph{font-size:21px;padding:18px 20px}
+.ph button,.x,.ghost,.pay,.tg{border-radius:99px}
+.newg{background:linear-gradient(135deg,#e8304f,#b81e3c)!important;padding:7px 14px!important}
+.primary{background:linear-gradient(135deg,#e8304f,#b81e3c);border-radius:99px;padding:12px 22px;box-shadow:0 6px 16px rgba(232,48,79,.3);transition:transform .15s}.primary:hover:not(:disabled){transform:translateY(-1px)}
+.pay{background:linear-gradient(135deg,#e8304f,#b81e3c)}
+input,select{border-radius:12px;padding:12px 14px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,75,.22)}
+label{font-weight:600;letter-spacing:.02em}
+.g{padding:14px 18px;transition:background .15s}.g.on{box-shadow:inset 3px 0 0 var(--gold)}
+.av{box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.body{padding:22px}
+.sum{border-radius:16px;border:1px solid var(--line);padding:16px}
+.sum .big{font-family:var(--fd);font-size:28px}
+.lockn{display:block;margin-top:10px;color:var(--mute)}
+.mem{padding:12px 0}
+.chip{font-weight:500;padding:4px 11px}
+.hold{border-radius:18px;background:linear-gradient(135deg,#1c1530,#5a1830);border:1px solid rgba(201,162,75,.4)}.hold b{font-family:var(--fd);font-size:30px}
+.msg{border-radius:16px;border-color:rgba(232,48,79,.5)}
+.inv{border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.14)}
+.ih{background:linear-gradient(135deg,#14121b,#34304c)}
+.il span{background:linear-gradient(135deg,#ecd08a,#c9a24b)}
+.cpn{border-radius:16px;background:linear-gradient(135deg,#1c1530,#4c2a8f)}
+.fbk{border-radius:18px}
+.stage{border-radius:18px}
+.tm{border-radius:8px;border-left-width:4px;transition:all .15s}.tm:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.d{border-radius:12px}.d.on{background:linear-gradient(135deg,#e8304f,#b81e3c)}
+.hero{border-radius:18px;background:linear-gradient(135deg,#14121b,#2a2140)}
+.hero .pst,.mc i{border-radius:14px;box-shadow:0 10px 24px rgba(0,0,0,.3)}
+.mc em{border-radius:0 0 14px 14px;backdrop-filter:blur(4px)}
+.rate{border-color:var(--gold);color:#ecd08a;border-radius:10px}
+.pbox{border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+#pm{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.eh{background:linear-gradient(135deg,#0b3d28,#17935a)}
+.sbar{border-radius:0}
+
+/* compact header actions */
+.ph{font-size:20px;white-space:nowrap;gap:10px}
+.ph>span:last-child{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ph button{font:600 12px/1 var(--ff)!important;white-space:nowrap}
+.newg{background:linear-gradient(135deg,#ecd08a,#c9a24b)!important;color:#1b1608!important;padding:8px 13px!important;letter-spacing:.04em;text-transform:uppercase;font-size:11px!important;font-weight:700!important;box-shadow:0 3px 10px rgba(201,162,75,.3);border-radius:99px;transition:transform .15s,box-shadow .15s}
+.newg:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(201,162,75,.4)}
+.ph .x{width:28px;height:28px;padding:0!important;display:grid;place-items:center;font-size:12px!important;border:1px solid var(--line)}
+.attr{font-size:12px;color:var(--mute);margin:30px 0 10px;text-align:center}
+button.poster{background:none;border:0;padding:0;text-align:left;color:var(--ink);cursor:pointer}.cnt{display:inline-flex;align-items:center;gap:8px;margin-right:10px}.cnt .ghost{padding:6px 12px}
+button.poster{display:block;align-self:flex-start}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">book<b>my</b>show</div>
+  <div class="search">Search for movies, events, plays</div>
+  <div class="nav-r">
+    <button class="gbtn" id="open" aria-label="Open GroupBook">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5v1H3zM15.5 14.2c3 0 5.5 1.7 5.5 4.3v1.5h-4v-1.4c0-1.6-.6-3-1.5-4.4z"/></svg>
+      GroupBook
+    </button>
+    <button class="signin">Sign in</button>
+  </div>
+</header>
+<div class="sub"><span>Movies</span><span>Stream</span><span>Events</span><span>Plays</span><span>Sports</span><span>Activities</span></div>
+<main>
+  <div class="banner">
+    <div><h2>Going with friends? Don’t be the one who pays for everyone.</h2><p>Create a group, pick seats together, and everyone pays their own share.</p></div>
+    <button id="open2">Try GroupBook</button>
+  </div>
+  <h3>Recommended movies</h3><p class="attr" style="text-align:left;margin:-6px 0 12px">Tap any movie to book tickets for yourself, or use GroupBook to split the bill with friends.</p>
+  <div class="row" id="posters"></div>
+<p class="attr">Movie data and posters are provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. Showtimes, prices and payments in this prototype are simulated.</p></main>
+
+<div id="gb" role="dialog" aria-modal="true" aria-label="GroupBook">
+  <div class="panel" id="panel">
+    <section class="side">
+      <div class="ph"><span>GroupBook</span><span><button class="newg" id="new">+ New group</button> <button class="x" id="close" aria-label="Close">✕</button></span></div>
+      <div class="glist" id="glist"></div>
+    </section>
+    <section class="main"><div class="body" id="body"></div></section>
+  </div>
+</div>
+
+<div id="pm" role="dialog" aria-modal="true" aria-label="Payment"></div>
+<script>
+var MOVIES=[
+ {t:"Udta Teer",g:"Action, Comedy",r:"8.2",v:"11.8K+",d:"2h 17m",p:320,c:"#2b8ad6,#e6c200",a:"A spy comedy where nobody can be trusted and one accidental mistake flips the whole game upside down."},
+ {t:"Drishyam The Conclusion",g:"Drama, Mystery, Thriller",r:"8.7",v:"156K+",d:"2h 41m",p:350,c:"#0f2027,#2c5364",a:"The final chapter of a family’s long game of secrets, lies and a case that never fully closed."},
+ {t:"Prahaar",g:"Biography, Drama",r:"9",v:"15.5K+",d:"2h 29m",p:300,c:"#5b1a18,#1a1a1a",a:"A powerful real-life story of one man’s fight against a system that tried to silence him."},
+ {t:"Rajini: The Jailer 2",g:"Action, Thriller",r:"8.4",v:"207K+",d:"2h 48m",p:380,c:"#c31432,#f7971e",a:"A retired jailer is pulled back into a violent world, and this time it’s personal."},
+ {t:"Namit Malhotra’s Ramayana",g:"Action, Adventure, Mythological",r:"9.1",v:"498K+",d:"3h 02m",p:420,c:"#4a2c0a,#b8860b",a:"The epic story of Ram’s journey, retold on a grand scale."}
+];
+var CINEMAS=[
+ {n:"Cinepolis: Nexus Seawoods, Nerul, Navi Mumbai",c:"Cancellation available",f:1,t:[["12:30 PM"],["03:30 PM"],["06:25 PM","",1],["09:25 PM"],["10:35 PM"]]},
+ {n:"Cinepolis: Lake Shore, Thane (EX Viviana Mall)",c:"Non-cancellable",f:1.1,t:[["01:40 PM","ATMOS"],["04:35 PM","ATMOS"],["07:30 PM","ATMOS",1],["09:40 PM","2K LASER DOLBY 7.1"],["10:25 PM","ATMOS"]]},
+ {n:"BMX Cinemas (BalajiMovieplex): Littleworld Kharghar",c:"Cancellation available",f:0.9,t:[["01:45 PM","4K LASER ATMOS"],["04:45 PM","4K LASER ATMOS"],["07:30 PM","4K LASER ATMOS",1],["10:15 PM","4K LASER ATMOS"]]}
+];
+var COLORS=["#f84464","#2b8a8a","#6c5ce7","#e17055","#0984e3","#00a86b","#b8860b"];
+var KEY="groupbook.groups.v1";
+var groups=[],sel=null,mode="empty",draft=null,pk={movie:null,date:0};
+try{groups=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){groups=[]}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(groups))}catch(e){}}
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function ini(n){return (n.trim()[0]||"?").toUpperCase()}
+function col(i){return COLORS[i%COLORS.length]}
+function gi(id){for(var i=0;i<groups.length;i++)if(groups[i].id===id)return groups[i]}
+
+var TMDB_KEY="";/* paste your free TMDB API key here to load live now-playing movies */
+function clean(x){return String(x==null?"":x).replace(/&/g,"and").replace(/[<>"]/g,"")}
+var solo=null;
+function art(m){
+  if(m.img)return 'background:#1e1d26 url('+m.img+') center/cover';
+  var ln=[],c="",cs=m.c.split(",");
+  clean(m.t).split(" ").forEach(function(x){if(c&&(c+" "+x).length>12){ln.push(c);c=x}else c=(c+" "+x).trim()});
+  ln.push(c);ln=ln.slice(0,4);
+  var v='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+cs[0]+'"/><stop offset="1" stop-color="'+cs[1]+'"/></linearGradient><linearGradient id="v" x1="0" y1="0" x2="0" y2="1"><stop offset=".35" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".8"/></linearGradient></defs><rect width="200" height="300" fill="url(#g)"/><rect width="200" height="300" fill="url(#v)"/><rect x="18" y="190" width="30" height="2.5" fill="#c9a24b"/>'+ln.map(function(t,k){return '<text x="18" y="'+(218+k*24)+'" fill="#fff" font-family="Georgia,serif" font-size="20" font-weight="700">'+t+'</text>'}).join("")+'</svg>';
+  return "background:url(data:image/svg+xml,"+encodeURIComponent(v).replace(/'/g,"%27").replace(/\(/g,"%28").replace(/\)/g,"%29")+") center/cover";
+}
+function loadLive(){
+  if(!TMDB_KEY)return;
+  var B="https://api.themoviedb.org/3",k="api_key="+encodeURIComponent(TMDB_KEY);
+  function J(u){return fetch(B+u).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
+  Promise.all([J("/genre/movie/list?"+k),J("/movie/now_playing?"+k+"&region=IN&page=1"),J("/movie/now_playing?"+k+"&region=IN&page=2")]).then(function(a){
+    var gm={};a[0].genres.forEach(function(x){gm[x.id]=x.name});
+    var list=a[1].results.concat(a[2].results).filter(function(x){return x.poster_path}).slice(0,24);
+    if(!list.length)return;
+    MOVIES.length=0;
+    list.forEach(function(x){
+      var vc=x.vote_count||0;
+      MOVIES.push({t:clean(x.title),g:clean((x.genre_ids||[]).map(function(i){return gm[i]}).filter(Boolean).slice(0,3).join(", ")||"Movie"),r:(x.vote_average||0).toFixed(1),v:vc>=1000?(vc/1000).toFixed(1)+"K+":String(vc),d:"Released "+clean(x.release_date||""),p:250+(x.id%8)*20,c:"#2b2d3a,#0e0d13",a:clean(x.overview||"No description available yet."),img:"https://image.tmdb.org/t/p/w500"+x.poster_path});
+    });
+    drawPosters();if($("gb").classList.contains("open"))render();
+  }).catch(function(){/* keep demo movies if the API is unreachable */});
+}
+function drawPosters(){$("posters").innerHTML=MOVIES.map(function(m,i){return '<button class="poster" data-i="'+i+'"><i style="'+art(m)+'"></i><b>'+m.t+'</b><small>₹'+m.p+' onwards</small></button>'}).join("");[].forEach.call(document.querySelectorAll(".poster"),function(b){b.onclick=function(){startSolo(+b.dataset.i)}})}
+drawPosters();loadLive();
+
+function openGB(){if(solo){solo=null;mode="empty";sel=null}$("gb").classList.add("open");render()}
+$("open").onclick=openGB;$("open2").onclick=openGB;
+$("close").onclick=function(){$("gb").classList.remove("open")};
+$("gb").addEventListener("click",function(e){if(e.target.id==="gb")$("gb").classList.remove("open")});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")$("gb").classList.remove("open")});
+$("new").onclick=function(){draft={name:"",n:3,m:[]};mode="create";sel=null;render(true)};
+
+function renderList(){
+  if(!groups.length){$("glist").innerHTML='<div class="empty">No groups yet.<br>Tap “New group” to start one.</div>';return}
+  $("glist").innerHTML=groups.map(function(g,i){
+    var paid=g.movie==null?0:Object.keys(g.paid||{}).length;
+    var last=g.movie==null?"No show picked yet":(g.movie+" · "+paid+"/"+g.members.length+" paid");
+    return '<button class="g'+(g.id===sel?' on':'')+'" data-id="'+g.id+'">'+gav(g)+'<div><b>'+esc(g.name)+'</b><small>'+g.members.length+' members – '+esc(last)+'</small></div></button>'
+  }).join("");
+  [].forEach.call(document.querySelectorAll(".g"),function(b){b.onclick=function(){sel=b.dataset.id;mode="detail";render(true)}});
+}
+
+function renderCreate(){
+  while(draft.m.length<draft.n-1)draft.m.push({name:"",phone:""});
+  draft.m.length=draft.n-1;
+  var rows=draft.m.map(function(x,i){return '<div class="mrow"><input data-i="'+i+'" data-f="name" placeholder="Friend '+(i+1)+' name" value="'+esc(x.name)+'" aria-label="Friend '+(i+1)+' name"><input data-i="'+i+'" data-f="phone" inputmode="numeric" placeholder="10-digit mobile number" value="'+esc(x.phone)+'" aria-label="Friend '+(i+1)+' mobile"><small class="pe" id="pe'+i+'" style="grid-column:2;color:var(--red)">'+perr(x.phone)+'</small></div>'}).join("");
+  $("body").innerHTML='<button class="x back" id="bk">← Groups</button><h3 style="margin-top:8px">New group</h3>'
+   +'<label for="gname">Group name</label><input id="gname" maxlength="30" placeholder="e.g. Weekend Movie Gang" value="'+esc(draft.name)+'">'
+   +'<label>Number of people (including you)</label><div class="stepper"><button id="mn" aria-label="Fewer">−</button><output>'+draft.n+'</output><button id="pl" aria-label="More">+</button></div>'
+   +'<label>Add members</label><div class="mrow"><input value="You (organiser)" disabled aria-label="You"><input value="Your number" disabled aria-label="Your number"></div>'+rows
+   +'<div id="err" style="color:var(--red);margin-top:10px"></div><button class="primary" id="mk">Create group</button><button class="ghost" id="cx">Cancel</button>';
+  $("bk").onclick=back;
+  $("gname").oninput=function(){draft.name=this.value};
+  [].forEach.call(document.querySelectorAll(".mrow input[data-i]"),function(inp){inp.oninput=function(){if(inp.dataset.f==="phone"){inp.value=inp.value.replace(/\D/g,"");$("pe"+inp.dataset.i).textContent=perr(inp.value)}draft.m[+inp.dataset.i][inp.dataset.f]=inp.value}});
+  $("mn").onclick=function(){if(draft.n>2){draft.n--;renderCreate()}};
+  $("pl").onclick=function(){if(draft.n<12){draft.n++;renderCreate()}};
+  $("cx").onclick=function(){mode="empty";render()};
+  $("mk").onclick=function(){
+    var bad=draft.m.some(function(x){return !x.name.trim()});
+    if(!draft.name.trim()){$("err").textContent="Enter a group name.";return}
+    if(bad){$("err").textContent="Enter a name for every member.";return}
+    if(draft.m.some(function(x){return !/^\d{10}$/.test(x.phone)})){$("err").textContent="Every mobile number must be exactly 10 digits.";return}
+    var g={id:"g"+Date.now(),name:draft.name.trim(),members:[{name:"You",phone:"",admin:true}].concat(draft.m.map(function(x){return{name:x.name.trim(),phone:x.phone.trim()}})),movie:null,row:"F",paid:{}};
+    groups.unshift(g);save();sel=g.id;mode="detail";render(true);
+  };
+}
+
+function back(){$("panel").classList.remove("show-main");sel=null;mode="empty";render()}
+
+function renderDetail(){
+  var g=gi(sel);if(!g){mode="empty";return renderEmpty()}
+  if(g.movie&&!g.seats){g.movie=null;g.paid={}}
+  if(g.movie&&!g.state){g.state="holding";g.exp=Date.now()+390000;g.sp={};g.seats.forEach(function(id){g.sp[id]=["Premium",Math.round(g.total/g.seats.length)]})}
+  if(g.state==="confirmed"&&!g.shown&&g.movie){g.shown=true;save();showCongrats(g)}
+  var n=g.members.length,m=null;
+  MOVIES.forEach(function(x){if(x.t===g.movie)m=x});
+  var h='<button class="x back" id="bk">← Groups</button><div class="mem" style="border:0">'+(isOrg(g)?'<button class="avb" id="pfp" aria-label="Change group photo">'+gav(g)+'<i>Edit</i></button>':gav(g))+'<div><b style="font-size:18px">'+esc(g.name)+'</b><small>'+n+' members</small></div></div>';
+  h+=m?'<div class="sum"><b>'+m.t+'</b><div style="color:var(--mute)">'+g.dateLabel+', '+g.time+'<br>'+esc(g.cinema)+'</div></div>'+(lockd(g)?'':'<button class="ghost" id="mv" style="margin:10px 0 0">Change movie or show</button>')+'</div>':'<button class="primary" id="mv" style="margin:14px 0 6px">Choose movie</button>';
+  if(m){
+    h+=holdCard(g,n);var total=g.total,share=Math.ceil(total/n),paid=Object.keys(g.paid).length;
+    var lk=lockd(g);
+    h+='<div class="sum"><div>'+(lk?'Your seats (locked)':'Your seats (best available, editable)')+'</div><div class="big">'+g.seats.join(", ")+'</div><div style="color:var(--mute)">'+g.bd+'</div>'
+      +(lk?'<small class="lockn">🔒 Seats are locked once payment has started and can no longer be changed.</small>':'<div class="tools"><button class="ghost" id="cs" style="margin:0">Change seats</button></div>')+'</div>';
+    h+=g.state==="refunded"?refundCard(g,n):invoice(g,m,n,paid)+coupons(g,n);
+  } else h+='<p style="color:var(--mute)">Pick a movie to get seats and the split amount.</p>';
+  h+=g.members.map(function(x,i){
+    var ok=g.paid[i];
+    return '<div class="mem"><span class="av" style="background:'+col(i+2)+'">'+ini(x.name)+'</span><div><b>'+esc(x.name)+(x.admin?' (organiser)':'')+'</b><small>'+esc(x.phone||"Organiser")+(m?' · ₹'+fmt(billOf(g).sh[i]):'')+' · ID '+pid(g,i)+(ok&&ok.ref?' · Ref '+ok.ref:(g.sent&&!x.admin?' · Request sent by SMS':''))+'</small></div>'
+     +(m?rowStat(g,i,ok):'<span class="chip">Waiting</span>')+'</div>'
+  }).join("");
+  h+=feedback(g,m)+'<button class="del" id="dl">Delete group</button>';
+  $("body").innerHTML=h;
+  $("bk").onclick=back;
+  if($("mv"))$("mv").onclick=function(){pk={movie:null,date:0};mode="pick";render()};
+  wireHold(g);
+  if($("cs")&&!lockd(g))$("cs").onclick=function(){pk={movie:null,date:0,show:{movie:g.movie,dateLabel:g.dateLabel,cinema:g.cinema,time:g.time,base:g.price},sel:g.seats.slice()};mode="seats";render()};
+  [].forEach.call(document.querySelectorAll(".pay"),function(b){b.onclick=function(){openPay(g,+b.dataset.i,billOf(g).sh[+b.dataset.i])}});
+  $("dl").onclick=function(){groups=groups.filter(function(x){return x.id!==g.id});save();sel=null;mode="empty";render()};
+}
+
+function renderEmpty(){
+  $("body").innerHTML='<div class="empty"><div style="font-size:40px">👥</div><b>Book together, pay separately</b><p>'+(groups.length?'Select a group from the list to continue, or start a new one.':'Create a group, add friends, and split the ticket amount equally. Your groups are saved here for next time.')+'</p><button class="primary" id="n2">'+(groups.length?'New group':'Create your first group')+'</button></div>';
+  $("n2").onclick=$("new").onclick;
+}
+
+function render(showMain){
+  if(showMain)$("panel").classList.add("show-main");
+  $("panel").classList.toggle("wide",mode==="pick"||mode==="movie"||mode==="shows"||mode==="seats"||mode==="spay"||mode==="sdone");
+  renderList();
+  if(mode==="create")renderCreate();else if(mode==="detail")renderDetail();else if(mode==="pick")renderPick();else if(mode==="movie")renderMovie();else if(mode==="shows")renderShows();else if(mode==="seats")renderSeats();else if(mode==="spay")renderSoloPay();else if(mode==="sdone")renderSoloDone();else renderEmpty();
+}
+var TIERS=[{n:"Recliner",m:1.6,rows:"LK",c:8},{n:"Premium",m:1,rows:"JIHG",c:14},{n:"Executive",m:.85,rows:"FEDC",c:14},{n:"Normal",m:.7,rows:"BA",c:14}];
+function hsh(s){var h=7;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h}
+function buildSeats(sh){
+  var rnd=hsh(sh.movie+sh.cinema+sh.dateLabel+sh.time),rows=[];
+  function r(){rnd=(rnd*1664525+1013904223)>>>0;return rnd/4294967296}
+  TIERS.forEach(function(t,k){t.rows.split("").forEach(function(L){
+    var seats=[];for(var i=1;i<=t.c;i++)seats.push({id:L+i,i:i,k:k,t:t,price:Math.round(sh.base*t.m),sold:r()<(t.n==="Normal"?.38:.28)});
+    rows.push({L:L,t:t,k:k,seats:seats})})});
+  return rows;
+}
+function best(rows,n){
+  var ideal=rows.length*.35,bs=-1e9,bl=null;
+  rows.forEach(function(row,ri){
+    var cen=(row.seats.length+1)/2,half=row.seats.length/2;
+    for(var s=0;s+n<=row.seats.length;s++){
+      var blk=row.seats.slice(s,s+n);
+      if(blk.some(function(x){return x.sold}))continue;
+      var v=-Math.abs(ri-ideal)*2-Math.abs(s+(n+1)/2-cen)*.8-(row.t.m>1?1.5:0)-(s<half&&s+n>half?1:0);
+      if(v>bs){bs=v;bl=blk}
+    }
+  });
+  if(bl)return bl.map(function(x){return x.id});
+  var free=[];
+  rows.forEach(function(row,ri){row.seats.forEach(function(x){if(!x.sold)free.push({id:x.id,v:-Math.abs(ri-ideal)*2-Math.abs(x.i-(row.seats.length+1)/2)*.5})})});
+  free.sort(function(a,b){return b.v-a.v});
+  return free.slice(0,n).map(function(x){return x.id});
+}
+function renderSeats(){
+  var g=gi(sel),sh=pk.show,n=solo?solo.n:g.members.length,rows=buildSeats(sh),map={},sc=$("body").scrollTop;
+  rows.forEach(function(r){r.seats.forEach(function(x){map[x.id]=x})});
+  if(!pk.sel)pk.sel=best(rows,n);
+  var tot=0;pk.sel.forEach(function(id){tot+=map[id].price});
+  var h='<button class="x" id="wb">'+(pk.movie?'← Showtimes':'← Back to group')+'</button><div class="stage"><div class="stt"><b>'+sh.movie+'</b><span>'+esc(sh.cinema)+' | '+sh.dateLabel+' | '+sh.time+'</span></div>';
+  h+='<div class="legend"><span><i class="lg"></i>Available</span><span><i class="lg" style="background:#22242f;border-color:#2b2d3a"></i>Sold</span><span><i class="lg" style="background:#f84464;border-color:#ff8aa0"></i>Selected</span><span>Tap a seat to change it</span></div><div class="hall">';
+  var last="";
+  rows.forEach(function(r){
+    if(r.t.n!==last){last=r.t.n;h+='<div class="tier t'+r.k+'">'+r.t.n+' · ₹'+Math.round(sh.base*r.t.m)+'</div>'}
+    h+='<div class="srow"><span class="rl">'+r.L+'</span><div class="seats">'+r.seats.map(function(x,i){
+      return '<button class="st t'+x.k+(x.sold?' sold':'')+(pk.sel.indexOf(x.id)>-1?' pick':'')+(i===r.seats.length/2?' gap':'')+'" data-s="'+x.id+'"'+(x.sold?' disabled':'')+' aria-label="Seat '+x.id+', ₹'+x.price+(x.sold?', sold':'')+'">'+x.i+'</button>'}).join("")+'</div></div>';
+  });
+  h+='</div><div class="screen"><i></i><span>All eyes this way</span></div></div>';
+  h+='<div class="sbar"><div><b>'+(pk.sel.join(", ")||"No seats selected")+'</b><small>'+pk.sel.length+' of '+n+' seats'+(solo?'':' (one per member)')+' · ₹'+tot+' tickets, fees added in the bill</small></div><div>'+(solo?'<span class="cnt"><button class="ghost" id="sm" aria-label="Fewer seats" style="margin:0">−</button><b>'+n+'</b><button class="ghost" id="sp" aria-label="More seats" style="margin:0">+</button></span>':'')+'<button class="ghost" id="rb" style="margin:0 8px 0 0">Best seats</button><button class="primary" id="ok" style="margin:0"'+(pk.sel.length===n?'':' disabled')+'>Confirm seats</button></div></div>';
+  $("body").innerHTML=h;$("body").scrollTop=sc;
+  $("wb").onclick=function(){mode=pk.movie?"shows":"detail";render()};
+  $("rb").onclick=function(){pk.sel=best(rows,n);renderSeats()};
+  if(solo){$("sm").onclick=function(){if(solo.n>1){solo.n--;pk.sel=best(rows,solo.n);renderSeats()}};$("sp").onclick=function(){if(solo.n<10){solo.n++;pk.sel=best(rows,solo.n);renderSeats()}}}
+  [].forEach.call(document.querySelectorAll(".st"),function(b){b.onclick=function(){
+    var id=b.dataset.s,i=pk.sel.indexOf(id);
+    if(i>-1)pk.sel.splice(i,1);else{pk.sel.push(id);if(pk.sel.length>n)pk.sel.shift()}
+    renderSeats();
+  }});
+  $("ok").onclick=function(){
+    var cnt={};pk.sel.forEach(function(id){var x=map[id],k=x.t.n+' ₹'+x.price;cnt[k]=(cnt[k]||0)+1});
+    if(solo){solo.show=sh;solo.sel=pk.sel.slice().sort(function(a,b){return a[0]<b[0]?-1:a[0]>b[0]?1:parseInt(a.slice(1))-parseInt(b.slice(1))});solo.total=tot;solo.bd=Object.keys(cnt).map(function(k){return k+' × '+cnt[k]}).join(' · ');mode="spay";render();return}
+    g.movie=sh.movie;g.dateLabel=sh.dateLabel;g.cinema=sh.cinema;g.time=sh.time;g.price=sh.base;
+    g.seats=pk.sel.slice().sort(function(a,b){return a[0]<b[0]?-1:a[0]>b[0]?1:parseInt(a.slice(1))-parseInt(b.slice(1))});
+    g.total=tot;g.bd=Object.keys(cnt).map(function(k){return k+' × '+cnt[k]}).join(' · ');g.paid={};g.sent=Date.now();g.sp={};pk.sel.forEach(function(id){g.sp[id]=[map[id].t.n,map[id].price]});g.state="holding";g.exp=Date.now()+390000;g.fb=null;g.watched=false;g.note="";g.cp=null;g.refunds=null;g.shown=false;
+    save();mode="detail";render(true);
+  };
+}
+function perr(p){return p&&p.length!==10?"Must be exactly 10 digits ("+p.length+" entered)":""}
+function pid(g,i){return "GB-"+hsh(g.id+i).toString(36).toUpperCase().slice(0,6)}
+function qrSvg(seed){
+  var s=hsh(seed),c="";
+  function r(){s=(s*1664525+1013904223)>>>0;return (s>>>28)<7}
+  function fp(x,y){return '<rect x="'+x+'" y="'+y+'" width="7" height="7" fill="#000"/><rect x="'+(x+1)+'" y="'+(y+1)+'" width="5" height="5" fill="#fff"/><rect x="'+(x+2)+'" y="'+(y+2)+'" width="3" height="3" fill="#000"/>'}
+  for(var y=0;y<25;y++)for(var x=0;x<25;x++){if((x<8&&y<8)||(x>16&&y<8)||(x<8&&y>16))continue;if(r())c+='<rect x="'+x+'" y="'+y+'" width="1" height="1" fill="#000"/>'}
+  return '<svg viewBox="-2 -2 29 29" aria-label="Payment QR"><rect x="-2" y="-2" width="29" height="29" fill="#fff"/>'+c+fp(0,0)+fp(18,0)+fp(0,18)+'</svg>';
+}
+function closePay(){$("pm").classList.remove("open")}
+function openPay(g,i,share){
+  var x=g.members[i],id=pid(g,i),va="7000"+String(hsh(id)%100000000).padStart(8,"0");
+  $("pm").innerHTML='<div class="pbox"><button class="x" id="pc" style="float:right" aria-label="Close">✕</button><b>'+esc(x.name)+'’s payment</b><div style="font-size:26px;font-weight:700">₹'+fmt(share)+'</div><div class="qr">'+qrSvg(id)+'</div><div class="pd">Payment ID: <b>'+id+'</b><br>UPI ID: <b>'+id.toLowerCase()+'@groupbook</b><br>Bank transfer: A/c <b>'+va+'</b>, IFSC <b>GRPB0000001</b></div><p class="pn">This QR, UPI ID and account number belong only to '+esc(x.name)+'. The bank reports the payment to GroupBook, so nobody has to mark it as paid.</p><div class="pd" style="margin:10px 0"><b>Sent to '+(x.admin?'your app':'+91 '+esc(x.phone))+'</b><br>Hi '+esc(x.name)+', you’re in “'+esc(g.name)+'” for '+esc(g.movie)+' ('+g.dateLabel+', '+g.time+'), seat '+g.seats[i]+'. Your share is ₹'+fmt(share)+'. Pay: groupbook.in/pay/'+id+' (QR attached)<br><button class="ghost" id="rs" style="margin:6px 0 0;padding:6px 10px">Resend</button> <span id="rsm"></span></div><div id="pst" class="chip">Waiting for payment…</div><br><button class="ghost" id="sim" style="margin:10px 0 0">Demo: simulate bank payment</button></div>';
+  $("pm").classList.add("open");
+  $("pc").onclick=closePay;$("rs").onclick=function(){$("rsm").textContent="Sent again";g.sent=Date.now();save()};
+  $("sim").onclick=function(){
+    $("pst").textContent="Payment detected…";$("sim").disabled=true;
+    setTimeout(function(){if(g.state==="holding"){g.paid[i]={ref:"UTR"+String(hsh(id+Date.now())).slice(0,8),at:Date.now()};if(paidN(g)===g.members.length)g.state="confirmed"}save();closePay();rr()},1500);
+  };
+}
+var CONV=55;
+function fmt(v){return v.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function billOf(g){
+  var n=g.members.length,tix=g.total,net=Math.round(tix/1.18*100)/100,gst=Math.round((tix-net)*100)/100,cb=CONV*n,ig=Math.round(cb*18)/100,conv=cb+ig,gross=Math.round((tix+conv)*100)/100,disc=cpAmt(g,tix,conv,n),order=Math.round((gross-disc)*100)/100,base=Math.floor(order*100/n)/100,sh=[];
+  for(var i=0;i<n;i++)sh.push(base);
+  sh[0]=Math.round((order-base*(n-1))*100)/100;
+  return {disc:disc,gross:gross,tix:tix,net:net,gst:gst,cb:cb,ig:ig,conv:conv,order:order,sh:sh,rd:Math.round((sh[0]-base)*100)/100};
+}
+function invoice(g,m,n,paid){
+  var b=billOf(g),d=new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}),no="GB-INV-"+hsh(g.id).toString(36).toUpperCase().slice(0,7),got=0;
+  function R(a,v,c){return '<div class="ir'+(c||"")+'"><span>'+a+'</span><span>'+v+'</span></div>'}
+  g.members.forEach(function(x,i){if(g.paid[i])got+=b.sh[i]});
+  return '<div class="inv"><div class="ih"><div><b class="il">book<em>my</em>show<span>GroupBook</span></b><small>Tax invoice for split booking</small></div><div style="text-align:right"><small>Invoice no.</small><b>'+no+'</b><small>'+d+'</small></div></div><div class="ib">'
+   +'<div class="mv"><b>'+esc(m.t)+'</b><small>Hindi, 2D · '+g.dateLabel+', '+g.time+'</small><small>'+esc(g.cinema)+'</small><small>Seats: '+g.seats.join(", ")+'</small></div>'
+   +'<div class="sec">Ticket price</div>'+R(esc(g.bd),'₹'+fmt(b.tix))+R('Net ticket price','₹'+fmt(b.net),' sub')+R('GST @18%','₹'+fmt(b.gst),' sub')
+   +'<div class="sec">Platform and convenience fee</div>'+R('Convenience fee','₹'+fmt(b.conv))+R('Base amount ('+n+' × ₹'+CONV+')','₹'+fmt(b.cb),' sub')+R('IGST @18%','₹'+fmt(b.ig),' sub')
+   +(b.disc>0?R('Coupon '+g.cpc+' applied','−₹'+fmt(b.disc),' sub'):'')+'<div class="perf"></div>'+R('Order total','₹'+fmt(b.order),' tot')+'<div class="perf"></div>'
+   +'<div class="sec" style="margin-top:0">Split between '+n+' members (equal share of the order total)</div>'
+   +g.members.map(function(x,i){return '<div class="spl"><span class="av" style="background:'+col(i+2)+'">'+ini(x.name)+'</span><span class="n">'+esc(x.name)+(x.admin?' (organiser)':'')+'</span><b>₹'+fmt(b.sh[i])+'</b>'+(g.paid[i]?'<span class="chip ok">Paid</span>':'<span class="chip">Pending</span>')+'</div>'}).join("")
+   +(b.rd>0?'<small style="color:var(--mute)">The organiser covers the ₹'+b.rd.toFixed(2)+' rounding difference.</small>':'')
+   +'<div class="bar"><i style="width:'+Math.round(got/b.order*100)+'%"></i></div><small style="color:var(--mute)">Collected ₹'+fmt(got)+' of ₹'+fmt(b.order)+' · '+paid+' of '+n+' paid (detected automatically). Paid members get their ticket even if others haven’t.</small></div></div>';
+}
+var CPD={
+ G10:{t:"10% off",d:"On tickets, up to ₹100",min:0,n:0,f:function(c){return Math.min(100,c.tix/10)}},
+ F75:{t:"₹75 off",d:"On orders above ₹800",min:800,n:0,f:function(){return 75}},
+ S20:{t:"₹20 off per member",d:"Groups of 3 or more",min:0,n:3,f:function(c,n){return 20*n}},
+ NOFEE:{t:"Zero convenience fee",d:"Groups of 4 or more",min:0,n:4,f:function(c){return c.conv}}
+};
+function cpAmt(g,tix,conv,n){var d=CPD[g.cp];if(!d)return 0;return Math.min(Math.round(d.f({tix:tix,conv:conv},n)*100)/100,tix+conv)}
+function cpCode(g,k){return k+"-"+hsh(g.id+k).toString(36).toUpperCase().slice(0,4)}
+function lockd(g){return paidN(g)>0||g.state==="confirmed"||g.state==="refunded"}
+function paidN(g){return Object.keys(g.paid).length}
+function clock(ms){ms=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(ms/60)).padStart(2,"0")+":"+String(ms%60).padStart(2,"0")}
+function rr(){var s=$("body").scrollTop;render();$("body").scrollTop=s}
+function goAhead(g,note){
+  var keep=[],pd={};
+  g.members.forEach(function(x,i){if(g.paid[i]){pd[keep.length]=g.paid[i];keep.push(x)}});
+  if(keep.length&&!keep.some(function(x){return x.admin}))keep[0].admin=true;
+  g.members=keep;g.paid=pd;g.seats=g.seats.slice(0,keep.length);
+  var cnt={},tot=0;
+  g.seats.forEach(function(id){var s=g.sp[id];tot+=s[1];var k=s[0]+' ₹'+s[1];cnt[k]=(cnt[k]||0)+1});
+  g.total=tot;g.bd=Object.keys(cnt).map(function(k){return k+' × '+cnt[k]}).join(' · ');g.state="confirmed";g.note=note;
+}
+function expire(g){
+  var n=g.members.length,k=paidN(g);
+  if(k*2>n)goAhead(g,"Most members paid in time, so the booking is confirmed for the "+k+" who paid. The other "+(n-k)+(n-k===1?" seat was":" seats were")+" released.");
+  else g.state="decision";
+}
+function refundAll(g){
+  var b=billOf(g);g.refunds=[];
+  g.members.forEach(function(x,i){if(g.paid[i])g.refunds.push({i:i,amt:b.sh[i],ref:"RFD"+String(hsh(g.id+i+"r")).slice(0,8)})});
+  g.state="refunded";
+}
+setInterval(function(){
+  var ch=false;
+  groups.forEach(function(g){if(g.state==="holding"&&g.exp-Date.now()<=0){expire(g);ch=true}});
+  if(ch){save();if(mode==="detail")rr();else renderList()}
+  else if(mode==="detail"){var g=gi(sel),t=$("tm");if(g&&g.state==="holding"&&t)t.textContent=clock(g.exp-Date.now())}
+},1000);
+function holdCard(g,n){
+  if(g.state==="holding")return '<div class="hold"><span>Seats held for you</span><b id="tm">'+clock(g.exp-Date.now())+'</b><button class="ghost" id="sk">Demo: end timer now</button><small>Every member must pay before the timer ends, or their seat is released.</small></div>';
+  if(g.state==="decision"){var k=paidN(g);return '<div class="msg"><b>Time is up: only '+k+' of '+n+' members paid</b><p>Message for the organiser: the seats of unpaid members have been released. Choose what happens next.</p><div class="tools"><button class="primary" id="go" style="margin:0"'+(k?'':' disabled')+'>Continue with '+k+' member'+(k===1?'':'s')+'</button><button class="ghost" id="rf" style="margin:0">Refund everyone</button></div></div>'}
+  if(g.state==="confirmed")return '<div class="msg ok">'+(g.note?esc(g.note)+'<br>':'')+'<b>Booking confirmed</b> <button class="ghost" id="eb" style="margin:0 0 0 8px;padding:5px 10px">View e-bill</button></div>';
+  return "";
+}
+function rowStat(g,i,ok){
+  if(g.state==="refunded")return ok?'<span class="chip">Refund within 7 days</span>':'<span class="chip">Not charged</span>';
+  if(ok)return '<span class="chip ok">Ticket confirmed</span>';
+  if(g.state==="holding")return '<span class="chip">Awaiting payment</span> <button class="pay" data-i="'+i+'">Payment QR</button>';
+  return '<span class="chip">Time is up</span>';
+}
+function refundCard(g,n){
+  var R=g.refunds||[];
+  return '<div class="msg"><b>Booking cancelled and seats released</b><p>Every member who paid gets a separate refund to the account or UPI ID they paid from. It reaches them within 7 days.</p>'
+  +(R.length?R.map(function(r){var x=g.members[r.i];return '<div class="spl"><span class="av" style="background:'+col(r.i+2)+'">'+ini(x.name)+'</span><span class="n"><b>'+esc(x.name)+(x.admin?' (organiser)':'')+'</b><small style="display:block;color:var(--mute)">Message sent: Hi '+esc(x.name)+', your booking for '+esc(g.movie)+' was cancelled. ₹'+fmt(r.amt)+' will reach you within 7 days. Ref '+r.ref+'</small></span><b>₹'+fmt(r.amt)+'</b></div>'}).join(""):'<p>Nobody had paid, so no money was charged.</p>')
+  +'<button class="primary" id="rn" style="margin-top:10px">Plan another show</button></div>';
+}
+function coupons(g,n){
+  var b=billOf(g),lock=paidN(g)>0;
+  return '<div class="sec" style="margin:18px 0 4px;font-size:15px;color:var(--ink)">Your coupons</div><small style="color:var(--mute)">Generated instantly for this booking. Pick one to lower the bill'+(lock?' (locked once payments start)':'')+'.</small><div class="cps" style="margin-top:10px">'
+  +Object.keys(CPD).map(function(k){var d=CPD[k],ok=b.gross>=d.min&&n>=d.n,on=g.cp===k;
+    return '<button class="cpn'+(on||(ok&&!lock)?'':' off')+(on?' on':'')+'" data-k="'+k+'"><span class="cl"><b>'+d.t+'</b><small>'+d.d+'</small></span><span class="cr"><span>'+cpCode(g,k)+'</span><em>'+(on?'Applied':ok?'Apply':'Not eligible')+'</em></span></button>'}).join("")+'</div>';
+}
+function fbOf(g,i){g.fb=g.fb||{};return g.fb[i]||(g.fb[i]={s:0,tags:[],t:"",done:false})}
+function feedback(g,m){
+  if(!m||g.state!=="confirmed")return "";
+  if(!g.watched)return '<div class="sum"><b>After the show</b><div style="color:var(--mute)">Once the movie ends, every member can rate it here.</div><button class="ghost" id="wt" style="margin:8px 0 0">Demo: the show has ended</button></div>';
+  var W=["Poor","Fair","Good","Great","Loved it"],T=["Story","Acting","Music","Visuals","Sound","Seats"],sum=0,cnt=0;
+  g.members.forEach(function(x,i){var f=fbOf(g,i);if(f.done){sum+=f.s;cnt++}});
+  return '<div class="fbk"><h4>Did you enjoy '+esc(m.t)+'?</h4><small style="opacity:.75">'+(cnt?'Group rating '+(sum/cnt).toFixed(1)+' ★ · ':'')+cnt+' of '+g.members.length+' reviewed. Each member rates separately.</small>'
+  +g.members.map(function(x,i){var f=fbOf(g,i),st="";
+    for(var s=1;s<=5;s++)st+='<button class="sb'+(s<=f.s?' on':'')+'" data-m="'+i+'" data-s="'+s+'" aria-label="'+s+' stars"'+(f.done?' disabled':'')+'>★</button>';
+    return '<div class="fm"><div class="fh"><span class="av" style="background:'+col(i+2)+'">'+ini(x.name)+'</span><b>'+esc(x.name)+(x.admin?' (organiser)':'')+'</b>'+(f.s?'<em>'+W[f.s-1]+'</em>':'')+'</div><div>'+st+'</div>'
+    +(f.done?'<small style="opacity:.8">Thanks for the feedback. '+(f.tags.length?f.tags.join(", ")+'. ':'')+esc(f.t)+'</small>'
+    :T.map(function(t){return '<button class="tg'+(f.tags.indexOf(t)>-1?' on':'')+'" data-m="'+i+'" data-t="'+t+'">'+t+'</button>'}).join("")+'<textarea data-m="'+i+'" placeholder="Anything you would like to tell us? (optional)">'+esc(f.t)+'</textarea><button class="primary fsub" data-m="'+i+'">Submit feedback</button>')+'</div>'}).join("")+'</div>';
+}
+function wireHold(g){
+  var q=function(id,f){var e=$(id);if(e)e.onclick=f},A=function(s,f){[].forEach.call(document.querySelectorAll(s),f)};
+  q("go",function(){goAhead(g,"Continuing with the "+paidN(g)+" member"+(paidN(g)===1?"":"s")+" who paid. The other seats were released.");save();rr()});
+  q("rf",function(){refundAll(g);save();rr()});
+  q("sk",function(){g.exp=Date.now()-1;expire(g);save();rr()});
+  q("rn",function(){g.movie=null;g.seats=null;g.paid={};g.state=null;g.cp=null;g.note="";g.refunds=null;save();rr()});
+  q("wt",function(){g.watched=true;g.fb={};save();rr()});q("pfp",function(){openPfp(g)});q("eb",function(){showBill(g)});
+  A(".cpn",function(b){b.onclick=function(){var k=b.dataset.k;if(b.className.indexOf("off")>-1||paidN(g)>0)return;g.cp=g.cp===k?null:k;g.cpc=cpCode(g,k);save();rr()}});
+  A(".sb",function(b){b.onclick=function(){fbOf(g,+b.dataset.m).s=+b.dataset.s;save();rr()}});
+  A(".tg",function(b){b.onclick=function(){var f=fbOf(g,+b.dataset.m),i=f.tags.indexOf(b.dataset.t);if(i>-1)f.tags.splice(i,1);else f.tags.push(b.dataset.t);save();rr()}});
+  A(".fbk textarea",function(t){t.oninput=function(){fbOf(g,+t.dataset.m).t=t.value;save()}});
+  A(".fsub",function(b){b.onclick=function(){var f=fbOf(g,+b.dataset.m);if(!f.s){b.textContent="Pick a star rating first";return}f.done=true;save();rr()}});
+}
+function isOrg(g){return g.members.some(function(x){return x.admin&&x.name==="You"})}
+function gav(g){
+  var p=g.pic;
+  if(p&&p.t==="img")return '<span class="av" style="background:url('+p.v+') center/cover" role="img" aria-label="Group photo"></span>';
+  if(p&&p.t==="emo")return '<span class="av" style="background:'+p.c+';font-size:20px">'+p.v+'</span>';
+  return '<span class="av" style="background:'+col(groups.indexOf(g))+'">'+ini(g.name)+'</span>';
+}
+function openPfp(g){
+  var E=["🎬","🍿","🎟️","🎭","⭐","🔥","😎","🎉"],C=["#f84464","#6c5ce7","#0984e3","#00a86b","#e17055","#b8860b","#2b8a8a","#d63384"];
+  $("pm").innerHTML='<div class="pbox"><button class="x" id="pc" style="float:right" aria-label="Close">✕</button><b>Group photo</b><div class="pv" style="margin:12px auto;width:84px">'+gav(g)+'</div><div class="eg">'+E.map(function(e,i){return '<button class="eb" data-i="'+i+'" style="background:'+C[i]+'" aria-label="Use icon '+(i+1)+'">'+e+'</button>'}).join("")+'</div><input type="file" id="pf" accept="image/*" hidden><button class="primary" id="up" style="margin:12px 6px 0 0">Upload photo</button>'+(g.pic?'<button class="ghost" id="rm" style="margin:12px 0 0">Remove</button>':'')+'<p class="pn">Only the organiser can change the group photo. Everyone in the group sees it.</p></div>';
+  $("pm").classList.add("open");
+  $("pc").onclick=closePay;
+  [].forEach.call(document.querySelectorAll(".eb"),function(b){b.onclick=function(){g.pic={t:"emo",v:E[+b.dataset.i],c:C[+b.dataset.i]};save();closePay();rr()}});
+  $("up").onclick=function(){$("pf").click()};
+  if($("rm"))$("rm").onclick=function(){g.pic=null;save();closePay();rr()};
+  $("pf").onchange=function(){
+    var f=this.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){var im=new Image();im.onload=function(){
+      var cv=document.createElement("canvas"),s=Math.min(im.width,im.height);cv.width=cv.height=128;
+      cv.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,128,128);
+      g.pic={t:"img",v:cv.toDataURL("image/jpeg",.8)};save();closePay();rr();
+    };im.src=r.result};
+    r.readAsDataURL(f);
+  };
+}
+function showCongrats(g){
+  var C=["#f84464","#ffc857","#3ddc97","#6ec6ff","#b79cff","#ff8a5b"],cf="";
+  for(var i=0;i<40;i++)cf+='<i class="cf" style="left:'+(Math.random()*100)+'%;background:'+C[i%6]+';animation-duration:'+(2+Math.random()*1.8)+'s;animation-delay:'+(Math.random()*.9)+'s"></i>';
+  var n=g.members.length;
+  $("pm").innerHTML='<div class="pbox cg" id="cgx">'+cf+'<div class="ck">✓</div><h2>Congratulations!</h2><p style="margin:6px 0 2px">Your booking for <b>'+esc(g.movie)+'</b> is confirmed for '+n+' member'+(n===1?'':'s')+'.</p><p class="pn">Seats '+g.seats.join(", ")+'. Your e-bill is opening…</p><button class="primary" id="vb" style="margin-top:6px">View e-bill</button></div>';
+  $("pm").classList.add("open");
+  var t=setTimeout(function(){if($("cgx"))showBill(g)},3800);
+  $("vb").onclick=function(){clearTimeout(t);showBill(g)};
+}
+function showBill(g){
+  var b=billOf(g),bid="GB"+hsh(g.id+g.time).toString(36).toUpperCase().slice(0,8),d=new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+  function R(a,v,c){return '<div class="ir'+(c||"")+'"><span>'+a+'</span><span>'+v+'</span></div>'}
+  $("pm").innerHTML='<div class="pbox w"><div class="eh"><div class="ec">✓</div><b style="font-size:18px">Booking confirmed</b><small style="display:block;opacity:.85">Booking ID '+bid+' · '+d+'</small></div>'
+   +'<b style="font-size:17px">'+esc(g.movie)+'</b><small style="display:block;color:var(--mute)">Hindi, 2D · '+g.dateLabel+', '+g.time+'</small><small style="display:block;color:var(--mute)">'+esc(g.cinema)+'</small>'
+   +'<div class="qr" style="width:120px">'+qrSvg(bid)+'</div><p class="pn" style="text-align:center">Show this at the cinema entrance</p>'
+   +'<div class="sec">Tickets and payments</div>'
+   +g.members.map(function(x,i){var p=g.paid[i];return '<div class="spl"><span class="av" style="background:'+col(i+2)+'">'+ini(x.name)+'</span><span class="n"><b>'+esc(x.name)+'</b><small style="display:block;color:var(--mute)">Seat '+g.seats[i]+(p&&p.ref?' · Ref '+p.ref:'')+'</small></span><b>₹'+fmt(b.sh[i])+'</b></div>'}).join("")
+   +'<div class="sec">Bill</div>'+R(esc(g.bd),'₹'+fmt(b.tix))+R('Convenience fee (incl. IGST)','₹'+fmt(b.conv))+(b.disc>0?R('Coupon '+g.cpc,'−₹'+fmt(b.disc)):'')+R('Total paid','₹'+fmt(b.order),' tot')
+   +'<button class="primary" id="dn" style="width:100%">Done</button></div>';
+  $("pm").classList.add("open");
+  $("dn").onclick=closePay;
+}
+
+function startSolo(i){solo={n:2};pk={movie:MOVIES[i],date:0};sel=null;mode="movie";$("gb").classList.add("open");render()}
+function sbill(o){var cb=CONV*o.n,ig=Math.round(cb*18)/100,conv=cb+ig;return{tix:o.total,conv:conv,order:Math.round((o.total+conv)*100)/100}}
+function IR(a,v,c){return '<div class="ir'+(c||"")+'"><span>'+a+'</span><span>'+v+'</span></div>'}
+function renderSoloPay(){
+  var o=solo,b=sbill(o),sh=o.show;
+  $("body").innerHTML='<button class="x" id="wb">← Seats</button><h3 style="margin:12px 0 8px">Review your booking</h3>'
+   +'<div class="sum"><b>'+sh.movie+'</b><div style="color:var(--mute)">'+sh.dateLabel+', '+sh.time+'<br>'+esc(sh.cinema)+'<br>Seats: '+o.sel.join(", ")+'</div></div>'
+   +'<div class="inv"><div class="ib">'+IR(esc(o.bd),'₹'+fmt(b.tix))+IR('Convenience fee (incl. IGST)','₹'+fmt(b.conv))+'<div class="perf"></div>'+IR('Amount payable','₹'+fmt(b.order),' tot')+'</div></div>'
+   +'<label for="sph">Mobile number (ticket is sent here)</label><input id="sph" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" value="'+esc(o.ph||"")+'">'
+   +'<label for="smt">Payment method</label><select id="smt"><option>UPI</option><option>Credit / Debit card</option><option>Net banking</option><option>Wallet</option></select>'
+   +'<div id="serr" style="color:var(--red);margin-top:10px"></div><button class="primary" id="spb" style="width:100%">Pay ₹'+fmt(b.order)+'</button>';
+  $("wb").onclick=function(){pk.sel=o.sel.slice();mode="seats";render()};
+  $("sph").oninput=function(){this.value=this.value.replace(/\D/g,"");o.ph=this.value};
+  $("spb").onclick=function(){
+    if(!/^\d{10}$/.test($("sph").value)){$("serr").textContent="Enter a valid 10-digit mobile number.";return}
+    o.ph=$("sph").value;o.method=$("smt").value;this.disabled=true;this.textContent="Processing payment…";
+    setTimeout(function(){var k=hsh(sh.movie+sh.time+o.sel.join()+Date.now());o.id="BMS"+k.toString(36).toUpperCase().slice(0,8);o.ref="TXN"+String(k).slice(0,9);mode="sdone";render()},1400);
+  };
+}
+function renderSoloDone(){
+  var o=solo,b=sbill(o),sh=o.show;
+  $("body").innerHTML='<div class="inv"><div class="eh" style="margin:0"><div class="ec">✓</div><b style="font-size:18px">Booking confirmed</b><small style="display:block;opacity:.85">Booking ID '+o.id+'</small></div><div class="ib">'
+   +'<div class="mv"><b>'+sh.movie+'</b><small>Hindi, 2D · '+sh.dateLabel+', '+sh.time+'</small><small>'+esc(sh.cinema)+'</small><small>Seats: '+o.sel.join(", ")+' · '+o.n+' ticket'+(o.n>1?'s':'')+'</small></div>'
+   +'<div class="qr" style="width:130px">'+qrSvg(o.id)+'</div><p class="pn" style="text-align:center">Show this QR at the cinema entrance. A copy was sent to +91 '+esc(o.ph)+'.</p><div class="perf"></div>'
+   +IR('Paid via '+esc(o.method),'₹'+fmt(b.order),' tot')+'<small class="pn">Payment ref '+o.ref+'</small></div></div><button class="primary" id="sdn" style="width:100%">Done</button>';
+  $("sdn").onclick=function(){solo=null;mode="empty";$("gb").classList.remove("open")};
+}
+function renderPick(){
+  var g=gi(sel);
+  $("body").innerHTML='<button class="x" id="wb">← Back to group</button><h3 style="margin:12px 0 0">Choose a movie for '+esc(g.name)+'</h3><div class="mgrid">'+MOVIES.map(function(m,i){return '<button class="mc" data-i="'+i+'"><i style="'+art(m)+'"><em>★ '+m.r+'/10 '+m.v+' Votes</em></i><b>'+m.t+'</b><small>'+m.g+'</small></button>'}).join("")+'</div>';
+  $("wb").onclick=function(){mode="detail";render()};
+  [].forEach.call(document.querySelectorAll(".mc"),function(b){b.onclick=function(){pk.movie=MOVIES[+b.dataset.i];mode="movie";render()}});
+}
+function renderMovie(){
+  var m=pk.movie;
+  $("body").innerHTML='<button class="x" id="wb">← Movies</button><div class="hero" style="margin-top:12px"><i class="pst" style="'+art(m)+'"></i><div><h2>'+m.t+'</h2><div class="rate">★ '+m.r+'/10 ('+m.v+' Votes)</div><p>'+m.d+' • '+m.g+' • UA13+</p><p><span class="tag">2D</span><span class="tag">Hindi</span></p><button class="primary" id="bt" style="margin-top:6px">Book tickets</button></div></div><h3>About the movie</h3><p>'+m.a+'</p>';
+  $("wb").onclick=function(){if(solo){solo=null;$("gb").classList.remove("open")}else{mode="pick";render()}};
+  $("bt").onclick=function(){mode="shows";render()};
+}
+function renderShows(){
+  var m=pk.movie,g=gi(sel),DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],days=[];
+  for(var i=0;i<7;i++){var d=new Date();d.setDate(d.getDate()+i);days.push(d)}
+  function lab(d){return DN[d.getDay()]+" "+d.getDate()+" "+MN[d.getMonth()]}
+  var h='<button class="x" id="wb">← Movie</button><h3 style="margin:12px 0 4px">'+m.t+' - (Hindi)</h3><span class="tag" style="background:var(--chip);color:var(--mute)">'+m.d+'</span><span class="tag" style="background:var(--chip);color:var(--mute)">'+m.g+'</span>';
+  h+='<div class="dates">'+days.map(function(d,i){return '<button class="d'+(i===pk.date?' on':'')+'" data-d="'+i+'">'+DN[d.getDay()]+'<b>'+d.getDate()+'</b>'+MN[d.getMonth()]+'</button>'}).join("")+'</div>';
+  h+='<div class="leg"><span style="color:var(--green)">●</span> Available <span style="color:#e6a700">●</span> Fast filling</div>';
+  h+=CINEMAS.map(function(c,ci){return '<div class="cin"><b>'+c.n+'</b><small>'+c.c+' · from ₹'+Math.round(m.p*c.f)+'</small><div class="times">'+c.t.map(function(t,ti){return '<button class="tm'+(t[2]?' f':'')+'" data-c="'+ci+'" data-t="'+ti+'">'+t[0]+(t[1]?'<small>'+t[1]+'</small>':'')+'</button>'}).join("")+'</div></div>'}).join("");
+  $("body").innerHTML=h;
+  $("wb").onclick=function(){mode="movie";render()};
+  [].forEach.call(document.querySelectorAll(".d"),function(b){b.onclick=function(){pk.date=+b.dataset.d;renderShows()}});
+  [].forEach.call(document.querySelectorAll(".tm"),function(b){b.onclick=function(){
+    var c=CINEMAS[+b.dataset.c],t=c.t[+b.dataset.t];
+    pk.show={movie:m.t,dateLabel:lab(days[pk.date]),cinema:c.n,time:t[0],base:Math.round(m.p*c.f)};pk.sel=null;mode="seats";render();
+  }});
+}
+</script>
+</body>
+</html>
